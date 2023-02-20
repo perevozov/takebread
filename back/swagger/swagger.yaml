@@ -1,0 +1,87 @@
+swagger: "2.0"
+info:
+    title: API Title
+    version: "1.0"
+host: takebread.hopto.org
+basePath: /api
+schemes:
+    - https
+
+definitions:
+    Item:
+        type: object
+        required:
+        - id
+        - title
+        properties:
+            id:
+                type: string
+            title:  
+                type: string            
+    
+    ItemWithPosition:
+        allOf:
+            - $ref: '#/definitions/Item'
+              type: object
+            - properties:
+                position:
+                    type: integer
+        
+    List:
+        type: object
+        required:
+          - title
+        properties: 
+            id:
+                type: string
+            title:
+                type: string
+            items:
+                type: array
+                items: 
+                    $ref: '#/definitions/ItemWithPosition'
+    
+paths:
+    /item:
+        post:
+            consumes:
+                - application/json
+            description: creates a new item
+            parameters:
+                - in: body
+                  name: item
+                  schema:
+                    $ref: '#/definitions/Item'
+            responses:
+                "200":
+                    description: success
+                    schema:
+                        $ref: '#/definitions/Item'
+        put:
+            consumes:
+                - application/json
+            description: updates an existing item
+            parameters:
+                - in: body
+                  name: item
+                  schema:
+                    $ref: '#/definitions/Item'
+            responses:
+                "200":
+                    description: success
+                    schema:
+                        $ref: '#/definitions/Item'
+    /item/{itemID}:
+        get:
+            description: returns single item by it's ID
+            parameters:
+                - in: path
+                  name: itemID
+                  required: true
+                  type: integer
+            responses:
+                "200":
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/Item'
+
