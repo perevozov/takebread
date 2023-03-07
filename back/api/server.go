@@ -37,6 +37,9 @@ func (s *Server) initRouter() {
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
+	s.router.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("welcome post"))
+	})
 	s.router.Post("/item", s.handlePostItem)
 	s.router.Get("/item/{itemID}", s.handleGetItem)
 	s.router.Put("/item/{itemID}", s.handlePutItem)
@@ -44,6 +47,8 @@ func (s *Server) initRouter() {
 	s.router.Post("/list", s.handlePostList)
 	s.router.Get("/list/{listID}", s.handleGetList)
 	s.router.Put("/list/{listID}", s.handlePutList)
+
+	s.router.Get("/lists", s.handleGetLists)
 }
 
 func (s *Server) Mux() http.Handler {

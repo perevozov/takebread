@@ -26,7 +26,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import { Api } from './api/myApi'
+import { Api } from './api/api'
 
 type SectionProps = PropsWithChildren<{
   title: string;

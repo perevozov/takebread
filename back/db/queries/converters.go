@@ -4,7 +4,7 @@ import "takebread/api/models"
 
 func (item Item) ToWire() any {
 	public := models.Item{
-		ID: ptr(item.ID.String()),
+		ID: item.ID.String(),
 		Title: ptr(item.Title),
 	}
 	return public

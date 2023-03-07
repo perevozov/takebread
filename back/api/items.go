@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"takebread/api/models"
 	"takebread/db/queries"
@@ -16,7 +17,7 @@ func (s *Server) handlePutItem(rw http.ResponseWriter, r *http.Request ) {
 		s.logWriteError(WriteError(rw, err))
 		return
 	}
-	itemID, err := uuid.Parse(*model.ID)
+	itemID, err := uuid.Parse(model.ID)
 	if err != nil {
 		s.logWriteError(WriteError(rw, err))
 		return
@@ -52,6 +53,7 @@ func (s *Server) handleGetItem(rw http.ResponseWriter, r *http.Request ) {
 }
 
 func (s *Server) handlePostItem(rw http.ResponseWriter, r *http.Request ) {
+	log.Print("handlePostItem")
 	item, err := readAndUnmarshalBody[models.Item](r)
 	if err != nil {
 		s.logWriteError(WriteError(rw, err))
@@ -63,9 +65,9 @@ func (s *Server) handlePostItem(rw http.ResponseWriter, r *http.Request ) {
 	}
 
 	var newItem queries.Item
-	if item.ID != nil {
+	if item.ID != "" {
 		var itemID uuid.UUID
-		itemID, err = uuid.Parse(*item.ID)
+		itemID, err = uuid.Parse(item.ID)
 		if err != nil {
 			s.logWriteError(WriteError(rw, err))
 			return

@@ -42,7 +42,7 @@ func (s *Server) handleGetList(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	result := models.List{
+	result := models.ListWithItems{
 		ID:    list.ID.String(),
 		Title: Ptr(list.Title),
 		Items: positionedItems,
@@ -89,5 +89,13 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
 
+func (s *Server) handleGetLists(rw http.ResponseWriter, r *http.Request) {
+	lists, err := s.queries.ListLists(r.Context())
+	if err != nil {
+		s.logWriteError(WriteError(rw, WrapSqlError(err)))
+		return
+	}
+	WriteJSON(rw, lists)
 }

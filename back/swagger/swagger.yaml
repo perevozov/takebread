@@ -1,17 +1,25 @@
 swagger: "2.0"
 info:
-    title: API Title
+    title: TakeBread API
     version: "1.0"
+
 host: takebread.hopto.org
+
 basePath: /api
+
 schemes:
     - https
+
+produces:
+    - application/json
+
+consumes:
+    - application/json
 
 definitions:
     Item:
         type: object
         required:
-        - id
         - title
         properties:
             id:
@@ -27,7 +35,18 @@ definitions:
                 position:
                     type: integer
         
+    
     List:
+        type: object
+        required:
+          - title
+        properties: 
+            id:
+                type: string
+            title:
+                type: string
+    
+    ListWithItems:
         type: object
         required:
           - title
@@ -41,15 +60,24 @@ definitions:
                 items: 
                     $ref: '#/definitions/ItemWithPosition'
     
+    ListArray:
+        type: array
+        items: 
+            $ref: '#/definitions/List'
+        
+    
 paths:
     /item:
         post:
-            consumes:
-                - application/json
+            operationId: createItem
             description: creates a new item
+            consumes: 
+                - application/json
             parameters:
-                - in: body
-                  name: item
+                - 
+                  name: body
+                  in: body
+                  required: true
                   schema:
                     $ref: '#/definitions/Item'
             responses:
@@ -58,12 +86,15 @@ paths:
                     schema:
                         $ref: '#/definitions/Item'
         put:
-            consumes:
-                - application/json
+            operationId: updateItem
             description: updates an existing item
+            consumes: 
+                - application/json
             parameters:
-                - in: body
-                  name: item
+                - 
+                  in: body
+                  name: body
+                  required: true
                   schema:
                     $ref: '#/definitions/Item'
             responses:
@@ -73,15 +104,41 @@ paths:
                         $ref: '#/definitions/Item'
     /item/{itemID}:
         get:
-            description: returns single item by it's ID
+            operationId: getItem
+            description: returns single item by its ID
             parameters:
                 - in: path
                   name: itemID
                   required: true
-                  type: integer
+                  type: string
             responses:
                 "200":
                     description: OK
                     schema:
                         $ref: '#/definitions/Item'
+    
+    /list/{listID}:
+        get:
+            operationId: getList
+            description: return items list
+            parameters:
+              - in: path
+                name: listID
+                required: true
+                type: string
+            responses:
+              "200": 
+                description: OK
+                schema:
+                    $ref: '#/definitions/List'
+
+    /lists:
+        get:
+            operationId: listLists
+            description: returns lists of all items lists for the user
+            responses:
+                "200":
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/ListArray'
 

@@ -20,8 +20,7 @@ import (
 type Item struct {
 
 	// id
-	// Required: true
-	ID *string `json:"id"`
+	ID string `json:"id,omitempty"`
 
 	// title
 	// Required: true
@@ -32,10 +31,6 @@ type Item struct {
 func (m *Item) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateID(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateTitle(formats); err != nil {
 		res = append(res, err)
 	}
@@ -43,15 +38,6 @@ func (m *Item) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Item) validateID(formats strfmt.Registry) error {
-
-	if err := validate.Required("id", "body", m.ID); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -6,6 +6,7 @@ package queries
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -13,7 +14,7 @@ import (
 type Item struct {
 	ID         uuid.UUID
 	Title      string
-	DateCreate sql.NullTime
+	DateCreate time.Time
 }
 
 type ItemList struct {

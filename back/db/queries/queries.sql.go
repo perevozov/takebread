@@ -8,6 +8,7 @@ package queries
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -146,7 +147,7 @@ ORDER BY il.position asc
 type ListItemsByListRow struct {
 	ID         uuid.UUID
 	Title      string
-	DateCreate sql.NullTime
+	DateCreate time.Time
 	Position   sql.NullInt32
 }
 
