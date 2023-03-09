@@ -296,6 +296,38 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   list = {
     /**
+     * @description creates a new shopping list
+     *
+     * @name CreateLst
+     * @request POST:/list
+     */
+    createLst: (body: List, params: RequestParams = {}) =>
+      this.request<List, any>({
+        path: `/list`,
+        method: 'POST',
+        body: body,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description updates a shopping list
+     *
+     * @name UpdateList
+     * @request PUT:/list
+     */
+    updateList: (body: List, params: RequestParams = {}) =>
+      this.request<List, any>({
+        path: `/list`,
+        method: 'PUT',
+        body: body,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description return items list
      *
      * @name GetList

@@ -16,6 +16,7 @@ import {
   useColorScheme,
   View,
   Button,
+  TextInput,
 } from 'react-native';
 
 import {
@@ -98,6 +99,7 @@ class App extends React.Component {
               <>
                 <Stack.Screen name="Home" component={HomeScreen} />
                 <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="AddList" component={AddListScreen} />
                 {/* <Stack.Screen name="Settings" component={SettingsScreen} /> */}
               </>
             ) : (
@@ -131,25 +133,50 @@ function SignInScreen() {
   )
 }
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({navigation, route}) => {
+  
   return (
     <View>
-      <Button
-        title="Go to Jane's profile"
-        onPress={() =>
-          navigation.navigate('Profile', { name: 'Jane' })
-        }
-      />
-      <Button
-        title='About app'
-        onPress={() => {
-          navigation.navigate('About')
-        }}
-      />
+      <ListsList onAddPress={() => {
+        navigation.navigate('AddList')
+      }}/>
     </View>
 
   );
 };
+
+const AddListScreen = ({navigation}) => {
+  let [name, setName] = useState('')
+  
+  const onAdd = () => {
+    console.log(name, name)
+    if (name == '') {
+      return
+    }
+    const apiClient = new Api({
+      baseUrl: "http://192.168.0.19:8080"
+    })
+    apiClient.list.createLst({
+      title: name
+    }).then(() => {
+      navigation.goBack()
+    })
+    
+  }
+
+  const onCancel = () => {
+    navigation.goBack()
+  }
+
+  return (
+    <View>
+      <TextInput onChangeText={setName}></TextInput>
+      <Button title='Add' onPress={onAdd}/>
+      <Button title='Cancel' onPress={onCancel}/>
+    </View>
+  )
+}
+
 const ProfileScreen = ({ navigation, route }) => {
   return <Text>This is {route.params.name}'s profile</Text>;
 };

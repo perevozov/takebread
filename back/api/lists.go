@@ -97,5 +97,13 @@ func (s *Server) handleGetLists(rw http.ResponseWriter, r *http.Request) {
 		s.logWriteError(WriteError(rw, WrapSqlError(err)))
 		return
 	}
-	WriteJSON(rw, lists)
+	result := make([]models.List, len(lists))
+	for i := range lists {
+		l := &lists[i]
+		result[i] = models.List{
+			ID: l.ID.String(),
+			Title: &l.Title,
+		}
+	}
+	WriteJSON(rw, result)
 }

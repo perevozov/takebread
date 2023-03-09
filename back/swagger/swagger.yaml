@@ -116,6 +116,42 @@ paths:
                     description: OK
                     schema:
                         $ref: '#/definitions/Item'
+
+    /list:
+        post: 
+            operationId: createLst
+            description: creates a new shopping list
+            consumes:
+                - application/json
+            parameters:
+              - 
+                in: body
+                name: body
+                required: true
+                schema:
+                    $ref: '#/definitions/List'
+            responses:
+                "200":
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/List'
+        put:
+            operationId: updateList
+            description: updates a shopping list
+            consumes:
+                - application/json
+            parameters:
+              - 
+                in: body
+                name: body
+                required: true
+                schema:
+                    $ref: '#/definitions/List'
+            responses:
+              "200":
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/List'
     
     /list/{listID}:
         get:
