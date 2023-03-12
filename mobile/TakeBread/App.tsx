@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import {
   SafeAreaView,
@@ -17,6 +17,7 @@ import {
   View,
   Button,
   TextInput,
+  DeviceEventEmitter,
 } from 'react-native';
 
 import {
@@ -29,11 +30,14 @@ import {
 
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Events } from './Events'
+import { AddListScreen } from './screens/AddList'
+
 
 
 import { Api } from './api/api'
 import { ListItem } from './components/ListItem';
-import { ListsList } from './screens/ListsList';
+import { ListsList } from './components/ListsList';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -62,14 +66,12 @@ function App_(): JSX.Element {
   );
 }
 
-
 const Stack = createNativeStackNavigator();
 
 const AuthContext = React.createContext({
   isSignedIn: false,
-  setSignedIn: (signedId: boolean) => {}
+  setSignedIn: (signedId: boolean) => { }
 });
-
 
 
 class App extends React.Component {
@@ -92,7 +94,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <AuthContext.Provider value={{isSignedIn: this.state.isSignedIn, setSignedIn: this.setSignedIn}}>
+      <AuthContext.Provider value={{ isSignedIn: this.state.isSignedIn, setSignedIn: this.setSignedIn }}>
         <NavigationContainer>
           <Stack.Navigator initialRouteName='Home'>
             {this.state.isSignedIn ? (
@@ -118,7 +120,7 @@ class App extends React.Component {
 
 function SignInScreen() {
 
-  const {isSignedIn, setSignedIn} = React.useContext(AuthContext);
+  const { isSignedIn, setSignedIn } = React.useContext(AuthContext);
 
 
   return (
@@ -133,49 +135,53 @@ function SignInScreen() {
   )
 }
 
-const HomeScreen = ({navigation, route}) => {
-  
+const HomeScreen = ({ navigation, route }) => {
+
+  let [lists, updateLists] = useState([])
+
+  useEffect(
+    () => {
+      const apiClient = new Api({
+        baseUrl: "http://192.168.0.19:8080"
+      })
+      apiClient.lists.listLists().then(response => {
+        console.log(response.data)
+
+        updateLists(response.data)
+      })
+    },
+    []
+  )
+
+  useEffect(
+    () => {
+      DeviceEventEmitter.addListener(Events.onListAdd, (list) => {
+        // console.log(Events.onListAdd, list)
+        updateLists((l) => {
+          console.log(l)
+          return l.concat(list)
+        })
+      })
+      return () => {
+        DeviceEventEmitter.removeAllListeners(Events.onListAdd)
+      }
+    },
+    []
+  )
+
+
+
   return (
     <View>
-      <ListsList onAddPress={() => {
+      <ListsList lists={lists} onAddPress={() => {
         navigation.navigate('AddList')
-      }}/>
+      }} />
     </View>
 
   );
 };
 
-const AddListScreen = ({navigation}) => {
-  let [name, setName] = useState('')
-  
-  const onAdd = () => {
-    console.log(name, name)
-    if (name == '') {
-      return
-    }
-    const apiClient = new Api({
-      baseUrl: "http://192.168.0.19:8080"
-    })
-    apiClient.list.createLst({
-      title: name
-    }).then(() => {
-      navigation.goBack()
-    })
-    
-  }
 
-  const onCancel = () => {
-    navigation.goBack()
-  }
-
-  return (
-    <View>
-      <TextInput onChangeText={setName}></TextInput>
-      <Button title='Add' onPress={onAdd}/>
-      <Button title='Cancel' onPress={onCancel}/>
-    </View>
-  )
-}
 
 const ProfileScreen = ({ navigation, route }) => {
   return <Text>This is {route.params.name}'s profile</Text>;

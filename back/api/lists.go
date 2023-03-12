@@ -72,11 +72,18 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 	
 	
 	if isNew {
-		_, err := s.queries.CreateList(r.Context(), *listWithItems.Title)
+		list, err := s.queries.CreateList(r.Context(), *listWithItems.Title)
 		if err != nil {
 			s.logWriteError(WriteError(rw, err))
 			return
 		}
+
+		result := models.ListWithItems{
+			ID: list.ID.String(),
+			Title: &list.Title,
+		}
+
+		WriteJSON(rw, result)
 
 		// listID = list.ID
 	} else {
