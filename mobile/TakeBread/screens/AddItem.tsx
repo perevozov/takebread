@@ -2,10 +2,10 @@ import { Api } from '../api/api'
 import { useState } from 'react';
 import { DeviceEventEmitter, View, TextInput, Button } from 'react-native'
 import { Events } from '../Events'
-import { NavigationParams } from '../App';
 
+import { apiClient, NavigationParams } from '../App';
 
-export const AddListScreen = ({ navigation }: NavigationParams) => {
+export const AddItemScreen = ({ navigation, route }: NavigationParams) => {
     let [name, setName] = useState('')
 
     const onAdd = () => {
@@ -13,13 +13,10 @@ export const AddListScreen = ({ navigation }: NavigationParams) => {
         if (name == '') {
             return
         }
-        const apiClient = new Api({
-            baseUrl: "http://192.168.0.19:8080"
-        })
-        apiClient.list.createLst({
+        apiClient.list.addItem(route.params.id, {
             title: name
         }).then((response) => {
-            DeviceEventEmitter.emit(Events.onListAdd, response.data)
+            DeviceEventEmitter.emit(Events.onListItemAdd, response.data)
             navigation.goBack()
         })
 

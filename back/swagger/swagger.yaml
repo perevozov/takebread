@@ -166,7 +166,29 @@ paths:
               "200": 
                 description: OK
                 schema:
-                    $ref: '#/definitions/List'
+                    $ref: '#/definitions/ListWithItems'
+    
+    /list/{listID}/item:
+        put: 
+            operationId: addItem
+            description: adds new item to the list
+            consumes:
+                - application/json
+            parameters:
+              - in: path
+                name: listID
+                required: true
+                type: string
+              - in: body
+                name: body
+                required: true
+                schema:
+                    $ref: '#/definitions/Item'
+            responses:
+              "200":
+                description: OK
+                schema: 
+                    $ref: '#/definitions/ItemWithPosition'
 
     /lists:
         get:

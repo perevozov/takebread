@@ -36,6 +36,7 @@ func (s *Server) handleGetList(rw http.ResponseWriter, r *http.Request) {
 	for i := range items {
 		positionedItems[i] = &models.ItemWithPosition{
 			Item: models.Item{
+				ID: items[i].ID.String(),
 				Title: &items[i].Title,
 			},
 			Position: int64(items[i].Position.Int32),
@@ -69,8 +70,7 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 	} else {
 		isNew = true
 	}
-	
-	
+
 	if isNew {
 		list, err := s.queries.CreateList(r.Context(), *listWithItems.Title)
 		if err != nil {
@@ -79,7 +79,7 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 		}
 
 		result := models.ListWithItems{
-			ID: list.ID.String(),
+			ID:    list.ID.String(),
 			Title: &list.Title,
 		}
 
@@ -108,9 +108,48 @@ func (s *Server) handleGetLists(rw http.ResponseWriter, r *http.Request) {
 	for i := range lists {
 		l := &lists[i]
 		result[i] = models.List{
-			ID: l.ID.String(),
+			ID:    l.ID.String(),
 			Title: &l.Title,
 		}
 	}
 	WriteJSON(rw, result)
+}
+
+func (s *Server) handleAddItemToList(rw http.ResponseWriter, r *http.Request) {
+	listID, err := uuid.Parse(chi.URLParam(r, "listID"))
+	if err != nil {
+		s.logWriteError(WriteError(rw, err))
+		return
+	}
+	itemModel, err := readAndUnmarshalBody[models.Item](r)
+	if err != nil {
+		s.logWriteError(WriteError(rw, err))
+		return
+	}
+
+	_, err = s.queries.GetList(r.Context(), listID)
+	if err != nil {
+		s.logWriteError(WriteError(rw, err))
+		return
+	}
+
+	item, err := s.queries.CreateItem(r.Context(), *itemModel.Title)
+	if err != nil {
+		s.logWriteError(WriteError(rw, err))
+		return
+	}
+
+	itemWithPosition, err := s.queries.AddToList(
+		r.Context(),
+		queries.AddToListParams{
+			ListID: listID,
+			ItemID: item.ID,
+		},
+	)
+	if err != nil {
+		s.logWriteError(WriteError(rw, err))
+		return
+	}
+
+	WriteJSON(rw, itemWithPosition)
 }

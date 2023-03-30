@@ -1,4 +1,5 @@
 export const Events = {
-    onListAdd: "TakeBreadd::onListAdd"
+    onListAdd: "TakeBreadd::onListAdd",
+    onListItemAdd: "TakeBreadd::onListItemAdd",
   }
   

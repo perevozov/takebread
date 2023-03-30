@@ -11,9 +11,8 @@ tasks:
       - echo "{{.GREETING}}"
     silent: true
   
-  generate_db:
+  generate:
     cmds:
       - cd db; sqlc generate
       - cd ../mobile/TakeBread/api; ./generate.sh
       - cd swagger; ./generate.sh
-

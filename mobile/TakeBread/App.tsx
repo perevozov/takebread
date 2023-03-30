@@ -32,16 +32,28 @@ import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Events } from './Events'
 import { AddListScreen } from './screens/AddList'
+import { AddItemScreen } from './screens/AddItem';
+import { ViewListScreen } from './screens/ViewList'
+import { HomeScreen } from './screens/Home';
 
 
-
-import { Api } from './api/api'
+import { Api, ListArray } from './api/api'
 import { ListItem } from './components/ListItem';
 import { ListsList } from './components/ListsList';
+import { ShoppinList } from './api/types';
 
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
+
+export interface NavigationParams {
+  navigation: any,
+  route: any
+}
+
+export const apiClient = new Api({
+  baseUrl: "http://192.168.0.19:8080"
+})
 
 function App_(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -102,6 +114,15 @@ class App extends React.Component {
                 <Stack.Screen name="Home" component={HomeScreen} />
                 <Stack.Screen name="Profile" component={ProfileScreen} />
                 <Stack.Screen name="AddList" component={AddListScreen} />
+                <Stack.Screen
+                  name="ViewList"
+                  component={ViewListScreen}
+                  options={({ route }: {route: any}) => ({ title: route.params.title })}
+                />
+                <Stack.Screen
+                  name="AddItem"
+                  component={AddItemScreen}
+                />
                 {/* <Stack.Screen name="Settings" component={SettingsScreen} /> */}
               </>
             ) : (
@@ -135,55 +156,7 @@ function SignInScreen() {
   )
 }
 
-const HomeScreen = ({ navigation, route }) => {
-
-  let [lists, updateLists] = useState([])
-
-  useEffect(
-    () => {
-      const apiClient = new Api({
-        baseUrl: "http://192.168.0.19:8080"
-      })
-      apiClient.lists.listLists().then(response => {
-        console.log(response.data)
-
-        updateLists(response.data)
-      })
-    },
-    []
-  )
-
-  useEffect(
-    () => {
-      DeviceEventEmitter.addListener(Events.onListAdd, (list) => {
-        // console.log(Events.onListAdd, list)
-        updateLists((l) => {
-          console.log(l)
-          return l.concat(list)
-        })
-      })
-      return () => {
-        DeviceEventEmitter.removeAllListeners(Events.onListAdd)
-      }
-    },
-    []
-  )
-
-
-
-  return (
-    <View>
-      <ListsList lists={lists} onAddPress={() => {
-        navigation.navigate('AddList')
-      }} />
-    </View>
-
-  );
-};
-
-
-
-const ProfileScreen = ({ navigation, route }) => {
+const ProfileScreen = ({ navigation, route }: NavigationParams) => {
   return <Text>This is {route.params.name}'s profile</Text>;
 };
 

@@ -7,9 +7,7 @@ type ListItemProps = {
   };
 
 export class ListItem extends Component<ListItemProps> {
-    state = {
 
-    }
   render() {
     return <Text>Hello, I am your cat {this.props.name}!</Text>;
   }

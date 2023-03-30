@@ -47,6 +47,7 @@ func (s *Server) initRouter() {
 	s.router.Post("/list", s.handlePostList)
 	s.router.Get("/list/{listID}", s.handleGetList)
 	s.router.Put("/list/{listID}", s.handlePutList)
+	s.router.Put("/list/{listID}/item", s.handleAddItemToList)
 
 	s.router.Get("/lists", s.handleGetLists)
 }

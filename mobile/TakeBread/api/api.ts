@@ -334,9 +334,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/list/{listID}
      */
     getList: (listId: string, params: RequestParams = {}) =>
-      this.request<List, any>({
+      this.request<ListWithItems, any>({
         path: `/list/${listId}`,
         method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description adds new item to the list
+     *
+     * @name AddItem
+     * @request PUT:/list/{listID}/item
+     */
+    addItem: (listId: string, body: Item, params: RequestParams = {}) =>
+      this.request<ItemWithPosition, any>({
+        path: `/list/${listId}/item`,
+        method: 'PUT',
+        body: body,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
