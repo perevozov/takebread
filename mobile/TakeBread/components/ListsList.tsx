@@ -4,8 +4,10 @@ import { ShoppinList } from '../api/types';
 
 type ListsListProps = {
   lists?: ShoppinList[]
+  refreshing: boolean
   onAddPress?: () => void
   onItemPress?: (item: ShoppinList) => void
+  onRefresh?: () => void
 }
 
 type ListsListState = {
@@ -33,6 +35,8 @@ export class ListsList extends React.Component<ListsListProps, ListsListState> {
       data={this.props.lists}
       renderItem={this.renderItem}
       keyExtractor={item => item.id!}
+      refreshing={this.props.refreshing}
+      onRefresh={() => this.props.onRefresh && this.props.onRefresh()}
     />
   </View>)
   }

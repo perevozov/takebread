@@ -7,66 +7,108 @@ import { Events } from '../Events';
 import { ShoppinList } from '../api/types';
 import { ListsList } from '../components/ListsList';
 
-export const HomeScreen = ({ navigation, route }: NavigationParams) => {
+type HomeScreenState = {
+  lists: ListArray,
+  isError: boolean,
+  isLoading: boolean,
+}
 
-  let [lists, updateLists] = useState<ListArray>([])
-  let [isError, setError] = useState<boolean>(false)
-  let [isLoading, setLoading] = useState<boolean>(true)
-
-  useEffect(
-    () => {
-      apiClient.lists.listLists().then(response => {
-        console.log(response.data)
-        updateLists(response.data)
-        setLoading(false)
-        setError(false)
-      }).catch(e => {
-        setLoading(false)
-        setError(true)
-      })
-    },
-    []
-  )
-
-  useEffect(
-    () => {
-      DeviceEventEmitter.addListener(Events.onListAdd, (list) => {
-        updateLists((l) => l.concat(list))
-      })
-      return () => {
-        DeviceEventEmitter.removeAllListeners(Events.onListAdd)
-      }
-    },
-    []
-  )
-
-  const onAddPress = () => {
-    navigation.navigate('AddList')
+export class HomeScreen extends React.Component<NavigationParams, HomeScreenState> {
+  state = {
+    lists: [],
+    isError: false,
+    isLoading: true,
   }
 
-  const onItemPress = ({ id, title }: ShoppinList) => {
-    navigation.navigate('ViewList', {
+  updateLists(newValue: ListArray) {
+    this.setState({
+      lists: newValue
+    })
+  }
+
+  setError(isError: boolean) {
+    this.setState({
+      isError: isError
+    })
+  }
+
+  setLoading(isLoading: boolean) {
+    this.setState({
+      isLoading: isLoading
+    })
+  }
+  componentDidMount(): void {
+    DeviceEventEmitter.addListener(Events.onListAdd, (list) => {
+      this.setState(oldState => {
+        return {
+          lists: oldState.lists.concat(list)
+        }
+      })
+    })
+
+    this.refresh()
+  }
+
+  refresh() {
+    this.setState({
+      lists: [],
+      isLoading: true,
+      isError: false
+    }, () => {
+      apiClient.lists.listLists().then(response => {
+        this.setState({
+          lists: response.data,
+          isLoading: false,
+          isError: false
+        })
+      }).catch(e => {
+        this.setState({
+          lists: [],
+          isLoading: false,
+          isError: true,
+        })
+      })
+    })
+  }
+
+  componentWillUnmount(): void {
+    DeviceEventEmitter.removeAllListeners(Events.onListAdd)
+  }
+
+  onAddPress = () => {
+    this.props.navigation.navigate('AddList')
+  }
+
+  onItemPress = ({ id, title }: ShoppinList) => {
+    this.props.navigation.navigate('ViewList', {
       id: id,
       title: title,
     })
   }
 
-
-  return (
-    <View>
-      {isLoading
-        ? (
-          <Text>Loading data...</Text>
-        )
-        : isError ? (
-          <Text>Error...</Text>
-        ) : (
-          <ListsList lists={lists} onAddPress={onAddPress} onItemPress={onItemPress} />
-        )
-      }
-    </View>
-  );
-};
+  render() {
+    return (
+      <View>
+        {this.state.isLoading
+          ? (
+            <Text>Loading data...</Text>
+          )
+          : this.state.isError ? (
+            <Text>Error...</Text>
+          ) : (
+            <ListsList 
+            refreshing={this.state.isLoading}
+            lists={this.state.lists} 
+            onAddPress={this.onAddPress} 
+            onItemPress={this.onItemPress} 
+            onRefresh={() => this.refresh()}
+            />
+          )
+        }
+      </View>
+    );
+  };
+}
 
 
 

@@ -39,8 +39,6 @@ import { HomeScreen } from './screens/Home';
 
 import { Api, ListArray } from './api/api'
 import { ListItem } from './components/ListItem';
-import { ListsList } from './components/ListsList';
-import { ShoppinList } from './api/types';
 
 type SectionProps = PropsWithChildren<{
   title: string;
