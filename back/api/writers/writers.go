@@ -1,4 +1,4 @@
-package api
+package writers
 
 import (
 	"encoding/json"

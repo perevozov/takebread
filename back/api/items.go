@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"takebread/api/models"
+	"takebread/api/writers"
 	"takebread/db/queries"
 
 	"github.com/go-chi/chi/v5"
@@ -14,12 +15,12 @@ import (
 func (s *Server) handlePutItem(rw http.ResponseWriter, r *http.Request ) {
 	model, err := readAndUnmarshalBody[models.Item](r)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 	itemID, err := uuid.Parse(model.ID)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 	// TODO: validate
@@ -30,37 +31,37 @@ func (s *Server) handlePutItem(rw http.ResponseWriter, r *http.Request ) {
 	})
 	
 	if err != nil {
-		WriteError(rw, err)
+		writers.WriteError(rw, err)
 	} else {
-		WriteJSON(rw, item)
+		writers.WriteJSON(rw, item)
 	}
 }
 
 func (s *Server) handleGetItem(rw http.ResponseWriter, r *http.Request ) {
 	itemID, err := uuid.Parse(chi.URLParam(r, "itemID"))
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 
 	item, err := s.queries.GetItem(r.Context(), itemID)
 	if err != nil {
-		s.logWriteError(WriteError(rw, WrapSqlError(err)))
+		s.logWriteError(writers.WriteError(rw, WrapSqlError(err)))
 		return
 	}
 	
-	WriteJSON(rw, item)
+	writers.WriteJSON(rw, item)
 }
 
 func (s *Server) handlePostItem(rw http.ResponseWriter, r *http.Request ) {
 	log.Print("handlePostItem")
 	item, err := readAndUnmarshalBody[models.Item](r)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 	if item.Title == nil {
-		WriteError(rw, errors.New("title is required"))
+		writers.WriteError(rw, errors.New("title is required"))
 		return
 	}
 
@@ -69,7 +70,7 @@ func (s *Server) handlePostItem(rw http.ResponseWriter, r *http.Request ) {
 		var itemID uuid.UUID
 		itemID, err = uuid.Parse(item.ID)
 		if err != nil {
-			s.logWriteError(WriteError(rw, err))
+			s.logWriteError(writers.WriteError(rw, err))
 			return
 		}
 		newItem, err = s.queries.CreateItemWithId(r.Context(), queries.CreateItemWithIdParams{
@@ -82,8 +83,8 @@ func (s *Server) handlePostItem(rw http.ResponseWriter, r *http.Request ) {
 	}
 	
 	if err != nil {
-		WriteError(rw, err)
+		writers.WriteError(rw, err)
 	} else {
-		WriteJSON(rw, newItem)
+		writers.WriteJSON(rw, newItem)
 	}
 }

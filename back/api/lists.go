@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"takebread/api/models"
+	"takebread/api/writers"
 	"takebread/db/queries"
 
 	"github.com/go-chi/chi/v5"
@@ -16,19 +17,19 @@ func (s *Server) handlePutList(rw http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetList(rw http.ResponseWriter, r *http.Request) {
 	listID, err := uuid.Parse(chi.URLParam(r, "listID"))
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 
 	list, err := s.queries.GetList(r.Context(), listID)
 	if err != nil {
-		s.logWriteError(WriteError(rw, WrapSqlError(err)))
+		s.logWriteError(writers.WriteError(rw, WrapSqlError(err)))
 		return
 	}
 
 	items, err := s.queries.ListItemsByList(r.Context(), listID)
 	if err != nil {
-		s.logWriteError(WriteError(rw, WrapSqlError(err)))
+		s.logWriteError(writers.WriteError(rw, WrapSqlError(err)))
 		return
 	}
 
@@ -49,13 +50,13 @@ func (s *Server) handleGetList(rw http.ResponseWriter, r *http.Request) {
 		Items: positionedItems,
 	}
 
-	WriteJSON(rw, result)
+	writers.WriteJSON(rw, result)
 }
 
 func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 	listWithItems, err := readAndUnmarshalBody[models.List](r)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 
@@ -64,7 +65,7 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 	if listWithItems.ID != "" {
 		listID, err = uuid.Parse(listWithItems.ID)
 		if err != nil {
-			s.logWriteError(WriteError(rw, err))
+			s.logWriteError(writers.WriteError(rw, err))
 			return
 		}
 	} else {
@@ -74,7 +75,7 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 	if isNew {
 		list, err := s.queries.CreateList(r.Context(), *listWithItems.Title)
 		if err != nil {
-			s.logWriteError(WriteError(rw, err))
+			s.logWriteError(writers.WriteError(rw, err))
 			return
 		}
 
@@ -83,7 +84,7 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 			Title: &list.Title,
 		}
 
-		WriteJSON(rw, result)
+		writers.WriteJSON(rw, result)
 
 		// listID = list.ID
 	} else {
@@ -92,7 +93,7 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 			Title: *listWithItems.Title,
 		})
 		if err != nil {
-			s.logWriteError(WriteError(rw, err))
+			s.logWriteError(writers.WriteError(rw, err))
 			return
 		}
 	}
@@ -101,7 +102,7 @@ func (s *Server) handlePostList(rw http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetLists(rw http.ResponseWriter, r *http.Request) {
 	lists, err := s.queries.ListLists(r.Context())
 	if err != nil {
-		s.logWriteError(WriteError(rw, WrapSqlError(err)))
+		s.logWriteError(writers.WriteError(rw, WrapSqlError(err)))
 		return
 	}
 	result := make([]models.List, len(lists))
@@ -112,30 +113,30 @@ func (s *Server) handleGetLists(rw http.ResponseWriter, r *http.Request) {
 			Title: &l.Title,
 		}
 	}
-	WriteJSON(rw, result)
+	writers.WriteJSON(rw, result)
 }
 
 func (s *Server) handleAddItemToList(rw http.ResponseWriter, r *http.Request) {
 	listID, err := uuid.Parse(chi.URLParam(r, "listID"))
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 	itemModel, err := readAndUnmarshalBody[models.Item](r)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 
 	_, err = s.queries.GetList(r.Context(), listID)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 
 	item, err := s.queries.CreateItem(r.Context(), *itemModel.Title)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 
@@ -147,9 +148,9 @@ func (s *Server) handleAddItemToList(rw http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if err != nil {
-		s.logWriteError(WriteError(rw, err))
+		s.logWriteError(writers.WriteError(rw, err))
 		return
 	}
 
-	WriteJSON(rw, itemWithPosition)
+	writers.WriteJSON(rw, itemWithPosition)
 }

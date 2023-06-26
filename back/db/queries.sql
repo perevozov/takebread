@@ -55,3 +55,11 @@ SELECT * FROM lists ORDER BY date_create desc;
 -- name: GetList :one
 SELECT * FROM lists WHERE id=$1;
 
+-- name: FindUserByEmail :one
+SELECT * FROM users WHERE email=$1;
+
+-- name: CreateUser
+INSERT 
+INTO users(email)
+VALUES ($1) 
+RETURNING *;

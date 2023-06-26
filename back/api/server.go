@@ -3,12 +3,14 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"takebread/api/middleware"
 	"takebread/db/queries"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 type Server struct {
@@ -31,8 +33,13 @@ func NewServer(db *sql.DB, queries *queries.Queries ) *Server {
 	return server
 }
 
+
 func (s *Server) initRouter() {
-	s.router.Use(middleware.Logger)
+	s.router.Use(chiMiddleware.Logger)
+	s.router.Use(middleware.Auth(middleware.AuthFunction(func(token string) error {
+		return errors.New("wrong")
+	})))
+
 
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
