@@ -36,10 +36,7 @@ func NewServer(db *sql.DB, queries *queries.Queries ) *Server {
 
 func (s *Server) initRouter() {
 	s.router.Use(chiMiddleware.Logger)
-	s.router.Use(middleware.Auth(middleware.AuthFunction(func(token string) error {
-		return errors.New("wrong")
-	})))
-
+	
 
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
@@ -47,16 +44,26 @@ func (s *Server) initRouter() {
 	s.router.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome post"))
 	})
-	s.router.Post("/item", s.handlePostItem)
-	s.router.Get("/item/{itemID}", s.handleGetItem)
-	s.router.Put("/item/{itemID}", s.handlePutItem)
+	
+	s.router.Post("/login", s.handleLogin)
+	s.router.Post("/register", s.handleRegister)
 
-	s.router.Post("/list", s.handlePostList)
-	s.router.Get("/list/{listID}", s.handleGetList)
-	s.router.Put("/list/{listID}", s.handlePutList)
-	s.router.Put("/list/{listID}/item", s.handleAddItemToList)
-
-	s.router.Get("/lists", s.handleGetLists)
+	// require authorization
+	s.router.Group(func(r chi.Router) {
+		r.Use(middleware.Auth(middleware.AuthFunction(func(token string) error {
+			return errors.New("wrong")
+		})))
+		r.Post("/item", s.handlePostItem)
+		r.Get("/item/{itemID}", s.handleGetItem)
+		r.Put("/item/{itemID}", s.handlePutItem)
+	
+		r.Post("/list", s.handlePostList)
+		r.Get("/list/{listID}", s.handleGetList)
+		r.Put("/list/{listID}", s.handlePutList)
+		r.Put("/list/{listID}/item", s.handleAddItemToList)
+	
+		r.Get("/lists", s.handleGetLists)	
+	})
 }
 
 func (s *Server) Mux() http.Handler {

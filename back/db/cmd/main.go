@@ -10,6 +10,7 @@ import (
 	"takebread/db/queries"
 
 	_ "github.com/lib/pq"
+	"golang.org/x/exp/slog"
 
 	migrate "github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -33,6 +34,7 @@ func main() {
 	q := queries.New(db)
 	server := api.NewServer(db, q)
 
+	slog.Info("listening :8080")
 	err = http.ListenAndServe(":8080", server.Mux())
 	if err != nil {
 		log.Fatal(err)

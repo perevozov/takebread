@@ -25,6 +25,20 @@ type ItemList struct {
 
 type List struct {
 	ID         uuid.UUID
+	OwnerID    int32
 	Title      string
 	DateCreate sql.NullTime
+}
+
+type Session struct {
+	ID          uuid.UUID
+	UserID      int32
+	DateCreate  time.Time
+	DateExpires sql.NullTime
+}
+
+type User struct {
+	ID           int32
+	Email        string
+	PasswordHash []byte
 }

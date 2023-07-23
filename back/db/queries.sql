@@ -58,8 +58,20 @@ SELECT * FROM lists WHERE id=$1;
 -- name: FindUserByEmail :one
 SELECT * FROM users WHERE email=$1;
 
--- name: CreateUser
+-- name: CreateUser :one
 INSERT 
-INTO users(email)
-VALUES ($1) 
+INTO users(email, password_hash)
+VALUES ($1, $2) 
 RETURNING *;
+
+-- name: CreateSession :one
+INSERT 
+INTO sessions(user_id, date_expires)
+VALUES ($1, $2) 
+RETURNING *;
+
+-- name: FindSession :one
+SELECT * FROM sessions where id=$1;
+
+-- name: DeleteSession :exec
+DELETE FROM sessions where id=$1;

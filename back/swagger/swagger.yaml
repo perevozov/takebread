@@ -17,6 +17,14 @@ consumes:
     - application/json
 
 definitions:
+    NewUser:
+        type: object
+        properties: 
+            email:
+                type: string
+            password:
+                type: string
+
     Item:
         type: object
         required:
@@ -67,6 +75,44 @@ definitions:
         
     
 paths:
+    /register:
+        post:
+            operationId: register
+            description: Registers new user
+            consumes:
+                - application/json
+            parameters:
+                - 
+                  in: body
+                  name: body
+                  required: true
+                  schema:
+                    $ref: '#/definitions/NewUser'
+            responses:
+              "200":
+                description: success
+
+
+    /login:
+        post: 
+            operationId: login
+            description: Authenticate user, creates session and sets session cookie
+            consumes: 
+                - application/json
+            parameters:
+              - name: body
+                in: body
+                schema:
+                    type: object
+                    properties: 
+                        email: 
+                            type: string
+                        password:
+                            type: string
+            responses:
+                "200": 
+                    description: success
+
     /item:
         post:
             operationId: createItem

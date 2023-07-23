@@ -9,6 +9,11 @@
  * ---------------------------------------------------------------
  */
 
+export interface NewUser {
+  email?: string;
+  password?: string;
+}
+
 export interface Item {
   id?: string;
   title: string;
@@ -208,7 +213,7 @@ export class HttpClient<SecurityDataType = unknown> {
         ...(requestParams.headers || {}),
         ...(type && type !== ContentType.FormData ? {'Content-Type': type} : {}),
       },
-      signal: cancelToken ? this.createAbortSignal(cancelToken) : requestParams.signal,
+      signal: (cancelToken ? this.createAbortSignal(cancelToken) : requestParams.signal) || null,
       body: typeof body === 'undefined' || body === null ? null : payloadFormatter(body),
     }).then(async response => {
       const r = response as HttpResponse<T, E>;
@@ -247,6 +252,44 @@ export class HttpClient<SecurityDataType = unknown> {
  * @baseUrl https://takebread.hopto.org/api
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+  register = {
+    /**
+     * @description Registers new user
+     *
+     * @name Register
+     * @request POST:/register
+     */
+    register: (body: NewUser, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/register`,
+        method: 'POST',
+        body: body,
+        type: ContentType.Json,
+        ...params,
+      }),
+  };
+  login = {
+    /**
+     * @description Authenticate user, creates session and sets session cookie
+     *
+     * @name Login
+     * @request POST:/login
+     */
+    login: (
+      body: {
+        email?: string;
+        password?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, any>({
+        path: `/login`,
+        method: 'POST',
+        body: body,
+        type: ContentType.Json,
+        ...params,
+      }),
+  };
   item = {
     /**
      * @description creates a new item

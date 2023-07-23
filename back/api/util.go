@@ -14,6 +14,18 @@ type ErrorWithStatus struct {
 	original error
 }
 
+func NewErrorWithStatus(status int, msg string) ErrorWithStatus {
+	return ErrorWithStatus{status: status, original: errors.New(msg)}
+}
+
+func WithStatus(status int, err error) ErrorWithStatus {
+	return ErrorWithStatus{status: status, original: err}
+}
+
+func (e ErrorWithStatus) Unwrap() error {
+	return e.original
+}
+
 func WrapSqlError(e error) ErrorWithStatus {
 	status := 500
 	if errors.Is(e, sql.ErrNoRows) {

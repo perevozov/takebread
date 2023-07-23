@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"golang.org/x/exp/slog"
 )
 
 type Wired interface {
@@ -43,13 +45,20 @@ func WriteJSON(rw http.ResponseWriter, response any) error {
 }
 
 func WriteError(rw http.ResponseWriter, err error) error {
-	status := 400
+	status := http.StatusInternalServerError
 	if withStatus, ok := err.(ErrWithStatus); ok {
 		status = withStatus.Status()
 	}
 	rw.WriteHeader(status)
 	rw.Header().Add("Content-type", "text/text")
-	_, writeError := rw.Write([]byte(err.Error()))
+	var writeError error
+	if status == http.StatusInternalServerError {
+		slog.Error("internal server error: %w", err)
+		_, writeError = rw.Write([]byte("Internal server error"))
+	} else {
+		_, writeError = rw.Write([]byte(err.Error()))
+	}
+	
 	if writeError != nil {
 		return fmt.Errorf("response write error: %w", writeError)
 	}

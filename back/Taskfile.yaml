@@ -16,3 +16,7 @@ tasks:
       - cd db; sqlc generate
       - cd ../mobile/TakeBread/api; ./generate.sh
       - cd swagger; ./generate.sh
+  
+  start_backend:
+    cmds:
+      - go run db/cmd/main.go

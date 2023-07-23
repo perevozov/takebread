@@ -65,13 +65,61 @@ INSERT INTO lists (
 ) VALUES (
   $1
 )
-RETURNING id, title, date_create
+RETURNING id, owner_id, title, date_create
 `
 
 func (q *Queries) CreateList(ctx context.Context, title string) (List, error) {
 	row := q.db.QueryRowContext(ctx, createList, title)
 	var i List
-	err := row.Scan(&i.ID, &i.Title, &i.DateCreate)
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.Title,
+		&i.DateCreate,
+	)
+	return i, err
+}
+
+const createSession = `-- name: CreateSession :one
+INSERT 
+INTO sessions(user_id, date_expires)
+VALUES ($1, $2) 
+RETURNING id, user_id, date_create, date_expires
+`
+
+type CreateSessionParams struct {
+	UserID      int32
+	DateExpires sql.NullTime
+}
+
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
+	row := q.db.QueryRowContext(ctx, createSession, arg.UserID, arg.DateExpires)
+	var i Session
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.DateCreate,
+		&i.DateExpires,
+	)
+	return i, err
+}
+
+const createUser = `-- name: CreateUser :one
+INSERT 
+INTO users(email, password_hash)
+VALUES ($1, $2) 
+RETURNING id, email, password_hash
+`
+
+type CreateUserParams struct {
+	Email        string
+	PasswordHash []byte
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, createUser, arg.Email, arg.PasswordHash)
+	var i User
+	err := row.Scan(&i.ID, &i.Email, &i.PasswordHash)
 	return i, err
 }
 
@@ -82,6 +130,42 @@ DELETE FROM items WHERE id = $1
 func (q *Queries) DeleteItem(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteItem, id)
 	return err
+}
+
+const deleteSession = `-- name: DeleteSession :exec
+DELETE FROM sessions where id=$1
+`
+
+func (q *Queries) DeleteSession(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteSession, id)
+	return err
+}
+
+const findSession = `-- name: FindSession :one
+SELECT id, user_id, date_create, date_expires FROM sessions where id=$1
+`
+
+func (q *Queries) FindSession(ctx context.Context, id uuid.UUID) (Session, error) {
+	row := q.db.QueryRowContext(ctx, findSession, id)
+	var i Session
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.DateCreate,
+		&i.DateExpires,
+	)
+	return i, err
+}
+
+const findUserByEmail = `-- name: FindUserByEmail :one
+SELECT id, email, password_hash FROM users WHERE email=$1
+`
+
+func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, findUserByEmail, email)
+	var i User
+	err := row.Scan(&i.ID, &i.Email, &i.PasswordHash)
+	return i, err
 }
 
 const getItem = `-- name: GetItem :one
@@ -96,13 +180,18 @@ func (q *Queries) GetItem(ctx context.Context, id uuid.UUID) (Item, error) {
 }
 
 const getList = `-- name: GetList :one
-SELECT id, title, date_create FROM lists WHERE id=$1
+SELECT id, owner_id, title, date_create FROM lists WHERE id=$1
 `
 
 func (q *Queries) GetList(ctx context.Context, id uuid.UUID) (List, error) {
 	row := q.db.QueryRowContext(ctx, getList, id)
 	var i List
-	err := row.Scan(&i.ID, &i.Title, &i.DateCreate)
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.Title,
+		&i.DateCreate,
+	)
 	return i, err
 }
 
@@ -180,7 +269,7 @@ func (q *Queries) ListItemsByList(ctx context.Context, listID uuid.UUID) ([]List
 }
 
 const listLists = `-- name: ListLists :many
-SELECT id, title, date_create FROM lists ORDER BY date_create desc
+SELECT id, owner_id, title, date_create FROM lists ORDER BY date_create desc
 `
 
 func (q *Queries) ListLists(ctx context.Context) ([]List, error) {
@@ -192,7 +281,12 @@ func (q *Queries) ListLists(ctx context.Context) ([]List, error) {
 	var items []List
 	for rows.Next() {
 		var i List
-		if err := rows.Scan(&i.ID, &i.Title, &i.DateCreate); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.Title,
+			&i.DateCreate,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -246,7 +340,7 @@ func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) (Item, e
 }
 
 const updateList = `-- name: UpdateList :one
-UPDATE lists SET title=$2 WHERE id=$1 RETURNING id, title, date_create
+UPDATE lists SET title=$2 WHERE id=$1 RETURNING id, owner_id, title, date_create
 `
 
 type UpdateListParams struct {
@@ -257,6 +351,11 @@ type UpdateListParams struct {
 func (q *Queries) UpdateList(ctx context.Context, arg UpdateListParams) (List, error) {
 	row := q.db.QueryRowContext(ctx, updateList, arg.ID, arg.Title)
 	var i List
-	err := row.Scan(&i.ID, &i.Title, &i.DateCreate)
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.Title,
+		&i.DateCreate,
+	)
 	return i, err
 }
