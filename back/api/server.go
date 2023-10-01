@@ -3,7 +3,7 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"takebread/api/middleware"
@@ -36,7 +36,6 @@ func NewServer(db *sql.DB, queries *queries.Queries ) *Server {
 
 func (s *Server) initRouter() {
 	s.router.Use(chiMiddleware.Logger)
-	
 
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
@@ -51,8 +50,9 @@ func (s *Server) initRouter() {
 	// require authorization
 	s.router.Group(func(r chi.Router) {
 		r.Use(middleware.Auth(middleware.AuthFunction(func(token string) error {
-			return errors.New("wrong")
+			return fmt.Errorf("wrong token %s", token)
 		})))
+
 		r.Post("/item", s.handlePostItem)
 		r.Get("/item/{itemID}", s.handleGetItem)
 		r.Put("/item/{itemID}", s.handlePutItem)
@@ -78,12 +78,11 @@ func (s *Server) logWriteError(err error) {
 }
 
 func readAndUnmarshalBody[T any](r *http.Request) (*T, error){
-	defer r.Body.Close()
-
-	decoder := json.NewDecoder(r.Body)
 	result := new(T)
-
+	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(result)
+	r.Body.Close()
+	
 	if err != nil {
 		return nil, err
 	}

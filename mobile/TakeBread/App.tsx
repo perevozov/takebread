@@ -39,6 +39,7 @@ import { HomeScreen } from './screens/Home';
 
 import { Api, ListArray } from './api/api'
 import { ListItem } from './components/ListItem';
+import { config } from './config';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -50,7 +51,7 @@ export interface NavigationParams {
 }
 
 export const apiClient = new Api({
-  baseUrl: "http://192.168.0.19:8080"
+  baseUrl: config.apiEndpoint
 })
 
 function App_(): JSX.Element {
@@ -80,7 +81,7 @@ const Stack = createNativeStackNavigator();
 
 const AuthContext = React.createContext({
   isSignedIn: false,
-  setSignedIn: (signedId: boolean) => { }
+  setSignedIn: (signedId: boolean, token: string) => { }
 });
 
 
@@ -90,9 +91,12 @@ class App extends React.Component {
     isSignedIn: false
   }
 
-  setSignedIn = (signedIn: boolean) => {
+  setSignedIn = (signedIn: boolean, token: string) => {
+    apiClient.setSecurityData({ token: token })
+
     this.setState({
-      isSignedIn: true
+      isSignedIn: true,
+      token: token,
     })
   }
 
@@ -115,7 +119,7 @@ class App extends React.Component {
                 <Stack.Screen
                   name="ViewList"
                   component={ViewListScreen}
-                  options={({ route }: {route: any}) => ({ title: route.params.title })}
+                  options={({ route }: { route: any }) => ({ title: route.params.title })}
                 />
                 <Stack.Screen
                   name="AddItem"
@@ -147,7 +151,12 @@ function SignInScreen() {
       <Button
         title="Sign in"
         onPress={() => {
-          setSignedIn(true)
+          apiClient.login.login({ email: "demo@takebread.xyz", password: "demo1234" }).then(r => {
+            console.log(r.data)
+            setSignedIn(true, "123")
+          }).catch(e => {
+            console.error(e)
+          })
         }}
       />
     </View>

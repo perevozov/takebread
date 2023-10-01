@@ -14,6 +14,12 @@ export interface NewUser {
   password?: string;
 }
 
+export interface LoginResult {
+  sessionId?: string;
+  /** Expiration date in the RFC3339 format */
+  expires?: string;
+}
+
 export interface Item {
   id?: string;
   title: string;
@@ -282,11 +288,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
-      this.request<void, any>({
+      this.request<LoginResult, any>({
         path: `/login`,
         method: 'POST',
         body: body,
         type: ContentType.Json,
+        format: 'json',
         ...params,
       }),
   };
@@ -296,12 +303,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name CreateItem
      * @request POST:/item
+     * @secure
      */
     createItem: (body: Item, params: RequestParams = {}) =>
       this.request<Item, any>({
         path: `/item`,
         method: 'POST',
         body: body,
+        secure: true,
         type: ContentType.Json,
         format: 'json',
         ...params,
@@ -312,12 +321,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name UpdateItem
      * @request PUT:/item
+     * @secure
      */
     updateItem: (body: Item, params: RequestParams = {}) =>
       this.request<Item, any>({
         path: `/item`,
         method: 'PUT',
         body: body,
+        secure: true,
         type: ContentType.Json,
         format: 'json',
         ...params,
@@ -328,11 +339,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name GetItem
      * @request GET:/item/{itemID}
+     * @secure
      */
     getItem: (itemId: string, params: RequestParams = {}) =>
       this.request<Item, any>({
         path: `/item/${itemId}`,
         method: 'GET',
+        secure: true,
         format: 'json',
         ...params,
       }),
@@ -343,12 +356,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name CreateLst
      * @request POST:/list
+     * @secure
      */
     createLst: (body: List, params: RequestParams = {}) =>
       this.request<List, any>({
         path: `/list`,
         method: 'POST',
         body: body,
+        secure: true,
         type: ContentType.Json,
         format: 'json',
         ...params,
@@ -359,12 +374,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name UpdateList
      * @request PUT:/list
+     * @secure
      */
     updateList: (body: List, params: RequestParams = {}) =>
       this.request<List, any>({
         path: `/list`,
         method: 'PUT',
         body: body,
+        secure: true,
         type: ContentType.Json,
         format: 'json',
         ...params,
@@ -375,11 +392,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name GetList
      * @request GET:/list/{listID}
+     * @secure
      */
     getList: (listId: string, params: RequestParams = {}) =>
       this.request<ListWithItems, any>({
         path: `/list/${listId}`,
         method: 'GET',
+        secure: true,
         format: 'json',
         ...params,
       }),
@@ -389,12 +408,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name AddItem
      * @request PUT:/list/{listID}/item
+     * @secure
      */
     addItem: (listId: string, body: Item, params: RequestParams = {}) =>
       this.request<ItemWithPosition, any>({
         path: `/list/${listId}/item`,
         method: 'PUT',
         body: body,
+        secure: true,
         type: ContentType.Json,
         format: 'json',
         ...params,
@@ -406,11 +427,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name ListLists
      * @request GET:/lists
+     * @secure
      */
     listLists: (params: RequestParams = {}) =>
       this.request<ListArray, any>({
         path: `/lists`,
         method: 'GET',
+        secure: true,
         format: 'json',
         ...params,
       }),

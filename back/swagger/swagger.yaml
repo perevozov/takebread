@@ -16,64 +16,77 @@ produces:
 consumes:
     - application/json
 
+securityDefinitions:
+    Bearer:
+        type: apiKey
+        in: header
+        name: Authorization
+
 definitions:
     NewUser:
         type: object
-        properties: 
+        properties:
             email:
                 type: string
             password:
                 type: string
 
+    LoginResult:
+        type: object
+        properties:
+            sessionId:
+                type: string
+            expires:
+                type: string
+                description: Expiration date in the RFC3339 format
+
     Item:
         type: object
         required:
-        - title
+            - title
         properties:
-            id:
-                type: string
-            title:  
-                type: string            
-    
-    ItemWithPosition:
-        allOf:
-            - $ref: '#/definitions/Item'
-              type: object
-            - properties:
-                position:
-                    type: integer
-        
-    
-    List:
-        type: object
-        required:
-          - title
-        properties: 
             id:
                 type: string
             title:
                 type: string
-    
+
+    ItemWithPosition:
+        allOf:
+            - $ref: "#/definitions/Item"
+              type: object
+            - properties:
+                  position:
+                      type: integer
+
+    List:
+        type: object
+        required:
+            - title
+        properties:
+            id:
+                type: string
+            title:
+                type: string
+
     ListWithItems:
         type: object
         required:
-          - title
-        properties: 
+            - title
+        properties:
             id:
                 type: string
             title:
                 type: string
             items:
                 type: array
-                items: 
-                    $ref: '#/definitions/ItemWithPosition'
-    
+                items:
+                    $ref: "#/definitions/ItemWithPosition"
+
     ListArray:
         type: array
-        items: 
-            $ref: '#/definitions/List'
-        
-    
+        items:
+            $ref: "#/definitions/List"
+
 paths:
     /register:
         post:
@@ -82,76 +95,80 @@ paths:
             consumes:
                 - application/json
             parameters:
-                - 
-                  in: body
+                - in: body
                   name: body
                   required: true
                   schema:
-                    $ref: '#/definitions/NewUser'
+                      $ref: "#/definitions/NewUser"
             responses:
-              "200":
-                description: success
-
+                "200":
+                    description: success
 
     /login:
-        post: 
+        post:
             operationId: login
             description: Authenticate user, creates session and sets session cookie
-            consumes: 
+            consumes:
                 - application/json
             parameters:
-              - name: body
-                in: body
-                schema:
-                    type: object
-                    properties: 
-                        email: 
-                            type: string
-                        password:
-                            type: string
+                - name: body
+                  in: body
+                  schema:
+                      type: object
+                      properties:
+                          email:
+                              type: string
+                          password:
+                              type: string
             responses:
-                "200": 
+                "200":
                     description: success
+                    schema:
+                        $ref: "#/definitions/LoginResult"
 
     /item:
         post:
             operationId: createItem
             description: creates a new item
-            consumes: 
+            security:
+                - Bearer: []
+            consumes:
                 - application/json
             parameters:
-                - 
-                  name: body
+                - name: body
                   in: body
                   required: true
                   schema:
-                    $ref: '#/definitions/Item'
+                      $ref: "#/definitions/Item"
             responses:
                 "200":
                     description: success
                     schema:
-                        $ref: '#/definitions/Item'
+                        $ref: "#/definitions/Item"
         put:
             operationId: updateItem
             description: updates an existing item
-            consumes: 
+            security:
+                - Bearer: []
+            consumes:
                 - application/json
             parameters:
-                - 
-                  in: body
+                - in: body
                   name: body
                   required: true
                   schema:
-                    $ref: '#/definitions/Item'
+                      $ref: "#/definitions/Item"
             responses:
                 "200":
                     description: success
                     schema:
-                        $ref: '#/definitions/Item'
+                        $ref: "#/definitions/Item"
     /item/{itemID}:
         get:
             operationId: getItem
             description: returns single item by its ID
+            security:
+                - Bearer: []
             parameters:
                 - in: path
                   name: itemID
@@ -161,88 +178,95 @@ paths:
                 "200":
                     description: OK
                     schema:
-                        $ref: '#/definitions/Item'
+                        $ref: "#/definitions/Item"
 
     /list:
-        post: 
+        post:
             operationId: createLst
             description: creates a new shopping list
+            security:
+                - Bearer: []
             consumes:
                 - application/json
             parameters:
-              - 
-                in: body
-                name: body
-                required: true
-                schema:
-                    $ref: '#/definitions/List'
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      $ref: "#/definitions/List"
             responses:
                 "200":
                     description: OK
                     schema:
-                        $ref: '#/definitions/List'
+                        $ref: "#/definitions/List"
         put:
             operationId: updateList
             description: updates a shopping list
+            security:
+                - Bearer: []
             consumes:
                 - application/json
             parameters:
-              - 
-                in: body
-                name: body
-                required: true
-                schema:
-                    $ref: '#/definitions/List'
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      $ref: "#/definitions/List"
             responses:
-              "200":
+                "200":
                     description: OK
                     schema:
-                        $ref: '#/definitions/List'
-    
+                        $ref: "#/definitions/List"
+
     /list/{listID}:
         get:
             operationId: getList
             description: return items list
+            security:
+                - Bearer: []
             parameters:
-              - in: path
-                name: listID
-                required: true
-                type: string
+                - in: path
+                  name: listID
+                  required: true
+                  type: string
             responses:
-              "200": 
-                description: OK
-                schema:
-                    $ref: '#/definitions/ListWithItems'
-    
+                "200":
+                    description: OK
+                    schema:
+                        $ref: "#/definitions/ListWithItems"
+
     /list/{listID}/item:
-        put: 
+        put:
             operationId: addItem
             description: adds new item to the list
+            security:
+                - Bearer: []
             consumes:
                 - application/json
             parameters:
-              - in: path
-                name: listID
-                required: true
-                type: string
-              - in: body
-                name: body
-                required: true
-                schema:
-                    $ref: '#/definitions/Item'
+                - in: path
+                  name: listID
+                  required: true
+                  type: string
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      $ref: "#/definitions/Item"
             responses:
-              "200":
-                description: OK
-                schema: 
-                    $ref: '#/definitions/ItemWithPosition'
+                "200":
+                    description: OK
+                    schema:
+                        $ref: "#/definitions/ItemWithPosition"
 
     /lists:
         get:
             operationId: listLists
             description: returns lists of all items lists for the user
+            security:
+                - Bearer: []
             responses:
                 "200":
                     description: OK
                     schema:
-                        $ref: '#/definitions/ListArray'
-
+                        $ref: "#/definitions/ListArray"

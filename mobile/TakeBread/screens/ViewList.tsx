@@ -6,7 +6,7 @@ export class ViewListScreen extends React.Component<{ navigation: any, route: an
 
     render() {
         return (
-            <ShoppingListView listId={this.props.route.params.id}  />
+            <ShoppingListView listId={this.props.route.params.id}  onRefresh={()=>{}}/>
         )
     }
 }

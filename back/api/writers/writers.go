@@ -56,6 +56,7 @@ func WriteError(rw http.ResponseWriter, err error) error {
 		slog.Error("internal server error: %w", err)
 		_, writeError = rw.Write([]byte("Internal server error"))
 	} else {
+		slog.Error("request handle error", err)
 		_, writeError = rw.Write([]byte(err.Error()))
 	}
 	

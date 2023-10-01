@@ -36,7 +36,7 @@ func newAuthError (message string) authError {
 func Auth(authenticator sessionAuthenticator) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			authHeader := r.Header.Get("Authorization")
+			authHeader := r.Header.Get("X-Auth")
 			if authHeader == "" {
 				writers.WriteError(rw, newAuthError("authorization header is not found"))
 				return
